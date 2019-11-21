@@ -1,4 +1,4 @@
-(function () {
+(async function () {
     const findCocktailsButton = document.getElementById("findCocktails");
     const requestRandomCocktail = document.getElementById("randomCocktail");
     const apiPath = "https://thecocktaildb.com/api/json/";
@@ -6,24 +6,43 @@
     let queryString = "";
     let url = `${apiPath}${credentials}${queryString}`;
 
-//--------------search cocktails ingredients------------------------------------------------------------
+    //-------------filter by category--------------------------
+
+    const categoryFilterList = "/list.php?c=list";
+    url = `${apiPath}${credentials}${categoryFilterList}`;
+    const categoryListResponse = await fetch(url);
+    if (categoryListResponse.ok) {
+        const categoryListJsonResponse = await categoryListResponse.json();
+
+        function fillDataList() {
+            const categoryFilterDropdown = document.getElementById('categoryFilterDropdown');
+            let i = 0;
+            const len = categoryListJsonResponse.drinks.length;
+            const dl = document.createElement("datalist");
+
+            dl.id = "categoryList";
+            for (; i < len; i += 1) {
+                let option = document.createElement('option');
+                option.value = categoryListJsonResponse.drinks[i].strCategory;
+                dl.appendChild(option);
+            }
+            categoryFilterDropdown.appendChild(dl);
+        }
+
+        fillDataList();
+
+    }
+//--------------search by Category------------------------------------------------------------
     findCocktailsButton.addEventListener("click", async function (event) {
         event.preventDefault();
 
-        try {
-            console.log(event);
-            const searchInput = document.getElementById("ingredient_input");
-            console.log(searchInput.value);
-            //  const api_path = 'https://the-cocktail-db.p.rapidapi.com';
 
-            const queryString = `i=${searchInput.value}`;
-            // const url = `https://${rapidApiHost}/filter.php?${queryString}`;
-            const url = `https://${rapidApiHost}/filter.php?c=cocktail`;
-            console.log(url);
-            const response = await fetch(url, {
-                method: "GET",
-                headers: {"x-rapidapi-host": rapidApiHost, "x-rapidapi-key": rapidApiKey}
-            });
+        queryString = "/filter.php";
+        let url = `${apiPath}${credentials}${queryString}`;
+
+
+        try {
+            const response = await fetch(url)
 
             if (response.ok) {
                 console.log(response);
@@ -35,12 +54,6 @@
             console.log(error);
         }
 
-        //  fetch("https://the-cocktail-db.p.rapidapi.com/list.php?a=list", {
-        //    "method": "GET",
-        //  "headers": {
-        //    "x-rapidapi-host": "the-cocktail-db.p.rapidapi.com",
-        //  "x-rapidapi-key": "e1dea69240mshe0e612e627629aap126f2bjsn22af8b49f154"
-        //   }
     });
 //-------------------REQUEST A RANDOM COCKTAIL----------------------------------------------------------------------------
     requestRandomCocktail.addEventListener("click", async function () {
