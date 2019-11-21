@@ -32,6 +32,40 @@
         fillDataList();
 
     }
+ //----------------------filter by ingredients-------------------------------------------
+
+    const ingredientFilterList = "/list.php?i=list";
+    url = `${apiPath}${credentials}${ingredientFilterList}`;
+    const ingredientListResponse = await fetch(url);
+    if (ingredientListResponse.ok) {
+        const ingredientListJsonResponse = await ingredientListResponse.json();
+        ingredientListJsonResponse.drinks.sort(function (a,b) {
+
+            return b.StrIngredient1 - a.StrIgredient1;
+
+        });
+
+        function fillingredientList() {
+            const ingredientFilterDropdown = document.getElementById('ingredientFilterDropdown');
+            let i = 0;
+            const len = ingredientListJsonResponse.drinks.length;
+            const dl = document.createElement("datalist");
+
+            dl.id = "ingredientList";
+            for (; i < len; i += 1) {
+                let option = document.createElement('option');
+                option.value = ingredientListJsonResponse.drinks[i].strIngredient1;
+                dl.appendChild(option);
+            }
+            ingredientFilterDropdown.appendChild(dl);
+        }
+
+        fillingredientList();
+
+    }
+
+
+
 //--------------search by Category------------------------------------------------------------
     findCocktailsButton.addEventListener("click", async function (event) {
         event.preventDefault();
