@@ -1,4 +1,4 @@
-(async function () {
+( function () {
     const findCocktailsButton = document.getElementById("findCocktails");
     const requestRandomCocktail = document.getElementById("randomCocktail");
     const apiPath = "https://thecocktaildb.com/api/json/";
@@ -6,113 +6,75 @@
     let queryString = "";
     let url = `${apiPath}${credentials}${queryString}`;
 
-    //-------------filter by category--------------------------
 
-    const categoryFilterList = "/list.php?c=list";
-    url = `${apiPath}${credentials}${categoryFilterList}`;
-    const categoryListResponse = await fetch(url);
-    if (categoryListResponse.ok) {
-        const categoryListJsonResponse = await categoryListResponse.json();
+ //---definition of function to retrieve all option values for all datalists------
 
-        function fillDataList() {
-            const categoryFilterDropdown = document.getElementById('categoryFilterDropdown');
-            let i = 0;
-            const len = categoryListJsonResponse.drinks.length;
-            const dl = document.createElement("datalist");
-
-            dl.id = "categoryList";
-            for (; i < len; i += 1) {
-                let option = document.createElement('option');
-                option.value = categoryListJsonResponse.drinks[i].strCategory;
-                dl.appendChild(option);
-            }
-            categoryFilterDropdown.appendChild(dl);
+    const listBy = async someListFilter => {
+        const queryString = `/list.php?${someListFilter}=list`;
+        const url = `${apiPath}${credentials}${queryString}`;
+        const response = await fetch(url);
+        if (response.ok) {
+            const jsonResponse = await response.json();
+            fillList(jsonResponse)
         }
+    };
 
-        fillDataList();
+//----definition of function that fills the datalist with the data in the response from the fetch ----
 
-    }
- //----------------------filter by ingredients-------------------------------------------
+    const fillList = jsonResponse => {
+        const filterDropdown = document.getElementById(getHtmlElementForFilter(getFilterType(jsonResponse)));
+        let i = 0;
+        const len = jsonResponse.drinks.length;
+        const dl = document.createElement("datalist");
 
-    const ingredientFilterList = "/list.php?i=list";
-    url = `${apiPath}${credentials}${ingredientFilterList}`;
-    const ingredientListResponse = await fetch(url);
-    if (ingredientListResponse.ok) {
-        const ingredientListJsonResponse = await ingredientListResponse.json();
-        ingredientListJsonResponse.drinks.sort(function (a,b) {
-
-            return b.StrIngredient1 - a.StrIgredient1;
-
-        });
-
-        function fillingredientList() {
-            const ingredientFilterDropdown = document.getElementById('ingredientFilterDropdown');
-            let i = 0;
-            const len = ingredientListJsonResponse.drinks.length;
-            const dl = document.createElement("datalist");
-
-            dl.id = "ingredientList";
-            for (; i < len; i += 1) {
-                let option = document.createElement('option');
-                option.value = ingredientListJsonResponse.drinks[i].strIngredient1;
-                dl.appendChild(option);
-            }
-            ingredientFilterDropdown.appendChild(dl);
+        dl.id = getDatalistNameForFilter(getFilterType(jsonResponse));
+        for (; i < len; i += 1) {
+            let option = document.createElement('option');
+            option.value = jsonResponse.drinks[i][`str${getString(jsonResponse)}`];
+            dl.appendChild(option);
         }
-
-        fillingredientList();
-
-    }
-//--------------filter by alcoholic---------------------------------------
-
-    const alcoholicFilterList = "/list.php?a=list";
-    url = `${apiPath}${credentials}${alcoholicFilterList}`;
-    const alcoholicListResponse = await fetch(url);
-    if (alcoholicListResponse.ok) {
-        const alcoholicListJsonResponse = await alcoholicListResponse.json();
-        console.log(alcoholicListJsonResponse);
-
-        function fillAlcoholicList() {
-            const alcoholicFilterDropdown = document.getElementById('alcoholicFilterDropdown');
-            let i = 0;
-            const len = alcoholicListJsonResponse.drinks.length;
-            const dl = document.createElement("datalist");
-
-            dl.id = "alcoholicList";
-            for (; i < len; i += 1) {
-                let option = document.createElement('option');
-                option.value = alcoholicListJsonResponse.drinks[i].strAlcoholic;
-                dl.appendChild(option);
-            }
-            alcoholicFilterDropdown.appendChild(dl);
-        }
-
-        fillAlcoholicList();
-
-    }
-//--------------search by Category------------------------------------------------------------
-    findCocktailsButton.addEventListener("click", async function (event) {
-        event.preventDefault();
+        filterDropdown.appendChild(dl);
+    };
+//-----------------------------------------------------------------------------
+    const getFilterType = jsonResponse => {
+        const keys = Object.keys(jsonResponse.drinks[0]);
+        const letter = keys[0].charAt(3).toLowerCase();
+       switch(letter) {
+           case "a" :
+               return `alcohol`;
+           case "c" :
+               return "category";
+           case "i":
+               return "ingredient";
+           default:
+               return "glass"
+       }
+    };
+  //----------------------------------------------------------------------
+  const getString = jsonResponse => {
+      const keys = Object.keys(jsonResponse.drinks[0]);
+      const letter = keys[0].charAt(3).toLowerCase();
+      switch (letter) {
+          case "a" :
+              return 'Alcoholic';
+          case "c" :
+              return 'Category';
+          case "i" :
+              return 'Ingredient1';
+          default :
+              return 'Glass';
+      }
+  };
 
 
-        queryString = "/filter.php";
-        let url = `${apiPath}${credentials}${queryString}`;
-
-
-        try {
-            const response = await fetch(url)
-
-            if (response.ok) {
-                console.log(response);
-                const jsonResponse = await response.json();
-                console.log(jsonResponse);
-            }
-        }
-        catch (error) {
-            console.log(error);
-        }
-
-    });
+ //--------------------------------------------------
+ const getHtmlElementForFilter = filterString => {return `${filterString}Dropdown`};
+ //------------------------------------------------------------------------------
+const getDatalistNameForFilter = filterString => {return `${filterString}List`};
+//------------------------------------------------------------------------------------
+  listBy("a");
+  listBy("c");
+  listBy("i");
 //-------------------REQUEST A RANDOM COCKTAIL----------------------------------------------------------------------------
     requestRandomCocktail.addEventListener("click", async function () {
         const cocktailName = document.querySelector(".random .name");
