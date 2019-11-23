@@ -173,6 +173,7 @@
 
     document.getElementById("search").addEventListener("click", function () {
         event.preventDefault();
+        searchResults1.innerHTML = "";
         getDrinksContainingIngredients();
     });
 
@@ -183,7 +184,7 @@
         const addButton = document.getElementById("addIngredient");
         addCounter += 1;
         const latestIngredientBox = document.getElementById("ingredientDropdown");
-        const newIngredientBox = `<input class="ingredient">`;
+        const newIngredientBox = `<input class="ingredient" list="ingredientList">`;
         console.log(newIngredientBox);
         addButton.insertAdjacentHTML('beforebegin', newIngredientBox);
 
@@ -213,7 +214,7 @@
 
     const generateIngredientsQueryString = () => {
         const ingredientboxes = document.getElementsByClassName("ingredient");
-        results = [];
+        let results = [];
         for (const ingredientBox of ingredientboxes) {
             console.log(ingredientBox.value);
             results.push(ingredientBox.value);
@@ -233,6 +234,7 @@
             const response = await fetch(url);
             if (response.ok) {
                 const jsonResponse = await response.json();
+                console.log(jsonResponse);
                 displayResults(jsonResponse);
             }
 
