@@ -1,13 +1,21 @@
-( function () {
+(function () {
     const findCocktailsButton = document.getElementById("findCocktails");
     const requestRandomCocktail = document.getElementById("randomCocktail");
     const apiPath = "https://thecocktaildb.com/api/json/";
     const credentials = "v2/9973533";
     let queryString = "";
     let url = `${apiPath}${credentials}${queryString}`;
+    const cocktailIngredients = document.querySelector(".random .ingredients ul");
+    const categoryFilter = document.getElementById("categoryDropdown");
+    const ingredientFilter = document.getElementById("ingredientDropdown");
+    const alcoholicFilter = document.getElementById("alcoholDropdown");
+    const searchResults = document.getElementsByClassName("searchResults");
+    const searchResults1 = document.getElementById("searchResults1");
+
+    let addCounter = 1;
 
 
- //---definition of function to retrieve all option values for all datalists------
+    //---definition of function to retrieve all option values for all datalists------
 
     const listBy = async someListFilter => {
         const queryString = `/list.php?${someListFilter}=list`;
@@ -15,7 +23,8 @@
         const response = await fetch(url);
         if (response.ok) {
             const jsonResponse = await response.json();
-            fillList(jsonResponse)
+            console.log(jsonResponse);
+            fillList(jsonResponse);
         }
     };
 
@@ -39,42 +48,87 @@
     const getFilterType = jsonResponse => {
         const keys = Object.keys(jsonResponse.drinks[0]);
         const letter = keys[0].charAt(3).toLowerCase();
-       switch(letter) {
-           case "a" :
-               return `alcohol`;
-           case "c" :
-               return "category";
-           case "i":
-               return "ingredient";
-           default:
-               return "glass"
-       }
+        switch (letter) {
+            case "a" :
+                return `alcohol`;
+            case "c" :
+                return "category";
+            case "i":
+                return "ingredient";
+            default:
+                return "glass"
+        }
     };
-  //----------------------------------------------------------------------
-  const getString = jsonResponse => {
-      const keys = Object.keys(jsonResponse.drinks[0]);
-      const letter = keys[0].charAt(3).toLowerCase();
-      switch (letter) {
-          case "a" :
-              return 'Alcoholic';
-          case "c" :
-              return 'Category';
-          case "i" :
-              return 'Ingredient1';
-          default :
-              return 'Glass';
-      }
-  };
+    //----------------------------------------------------------------------
+    const getString = jsonResponse => {
+        const keys = Object.keys(jsonResponse.drinks[0]);
+        const letter = keys[0].charAt(3).toLowerCase();
+        switch (letter) {
+            case "a" :
+                return 'Alcoholic';
+            case "c" :
+                return 'Category';
+            case "i" :
+                return 'Ingredient1';
+            default :
+                return 'Glass';
+        }
+    };
 
 
- //--------------------------------------------------
- const getHtmlElementForFilter = filterString => {return `${filterString}Dropdown`};
- //------------------------------------------------------------------------------
-const getDatalistNameForFilter = filterString => {return `${filterString}List`};
+    //--------------------------------------------------
+    const getHtmlElementForFilter = filterString => {
+        return `${filterString}Dropdown`
+    };
+    //------------------------------------------------------------------------------
+    const getDatalistNameForFilter = filterString => {
+        return `${filterString}List`
+    };
 //------------------------------------------------------------------------------------
-  listBy("a");
-  listBy("c");
-  listBy("i");
+    listBy("a");
+    listBy("c");
+    listBy("i");
+
+//--------------------------------------------------------------------
+    const wrapWithTag = (content, tag) => {
+        return `<${tag}>${content}</${tag}>`
+    };
+//----------------------------------------------------------------------
+    const getIngredients = jsonResponse => {
+        let ingredients = [];
+        let i = 1;
+
+        do {
+            const ingredientName = jsonResponse.drinks[0][`strIngredient${i}`];
+            const ingredientMeasure = jsonResponse.drinks[0][`strMeasure${i}`];
+            ingredients.push(`${ingredientMeasure} ${ingredientName}`);
+            console.log(ingredients);
+            i += 1;
+        } while (jsonResponse.drinks[0][`strIngredient${i}`] !== null)
+
+        ingredients.forEach(ingredient => cocktailIngredients.insertAdjacentHTML('beforeend', wrapWithTag(ingredient, 'li')));
+        ingredients = [];
+
+    };
+//--------------------------------------------------------------------------
+    const getIngredientId = async ingredient => {
+        const formattedIngredient = await formatIngredient(ingredient);
+        const queryString = `/filter.php?i=${formattedIngredient}`;
+        const url = `${apiPath}${credentials}${queryString}`;
+        const response = await fetch(url);
+        if (response.ok) {
+            const jsonResponse = await response.json();
+            console.log(jsonResponse);
+            return jsonResponse;
+        }
+    };
+//-----------------------------------------------------------------------
+    const formatIngredient = ingredient => {
+        const formattedIngredient = ingredient.replace(/ /g, "_");
+        return formattedIngredient;
+    }
+
+
 //-------------------REQUEST A RANDOM COCKTAIL----------------------------------------------------------------------------
     requestRandomCocktail.addEventListener("click", async function () {
         const cocktailName = document.querySelector(".random .name");
@@ -83,54 +137,29 @@ const getDatalistNameForFilter = filterString => {return `${filterString}List`};
         const cocktailInstructions = document.querySelector(".random .instructions");
         const cocktailIngredients = document.querySelector(".random .ingredients ul");
         cocktailIngredients.innerHTML = "";
-        let ingredients = [];
 
-        console.log("---------------");
-        console.log(cocktailIngredients);
-        console.log("---------------");
+
         queryString = "/random.php";
         let url = `${apiPath}${credentials}${queryString}`;
         console.log(url);
 
-        const getIngredients = jsonResponse => {
-
-            let i = 1;
-            do {
-                ingredients.push(jsonResponse.drinks[0][`strIngredient${i}`]);
-                i += 1;
-            } while (jsonResponse.drinks[0][`strIngredient${i}`] !== null)
-
-            console.log(ingredients);
-            const wrapWithTag = (content, tag) => {
-                return `<${tag}>${content}</${tag}>`
-            };
-            ingredients.forEach(ingredient => cocktailIngredients.insertAdjacentHTML('beforeend', wrapWithTag(ingredient, 'li')));
-            ingredients = [];
-            console.log(ingredients);
-
-        };
 
         try {
             const response = await fetch(url);
             if (response.ok) {
-                console.log(response);
+
                 const jsonResponse = await response.json();
-                console.log(jsonResponse);
                 const randomCocktailName = jsonResponse.drinks[0].strDrink;
-                console.log(randomCocktailName);
                 const randomCocktailImage = jsonResponse.drinks[0].strDrinkThumb;
-                console.log(randomCocktailImage);
                 const randomCocktailInstructions = jsonResponse.drinks[0].strInstructions;
-                console.log(randomCocktailInstructions);
                 const randomCocktailGlass = jsonResponse.drinks[0].strGlass;
-                console.log(randomCocktailGlass);
-                getIngredients(jsonResponse);
+
                 cocktailInstructions.innerText = randomCocktailInstructions;
                 cocktailName.innerText = randomCocktailName;
                 cocktailImage.src = randomCocktailImage;
                 cocktailGlass.innerText = `for this cocktail you need a ${randomCocktailGlass}`;
                 cocktailInstructions.innerText = `instructions: ${randomCocktailInstructions}`;
-
+                getIngredients(jsonResponse);
             }
         }
         catch (error) {
@@ -140,7 +169,78 @@ const getDatalistNameForFilter = filterString => {return `${filterString}List`};
 
 
     });
-//-------------Request a cocktail by ingredient(s)----------------------------------------------------
+//-------------Request results by filtering----------------------------------------------------
 
+    document.getElementById("search").addEventListener("click", function () {
+        event.preventDefault();
+        getDrinksContainingIngredients();
+    });
+
+//---------------------eventHandeler for "add ..."buttons--------------------------
+
+    document.getElementById("addIngredient").addEventListener("click", function () {
+        event.preventDefault();
+        const addButton = document.getElementById("addIngredient");
+        addCounter += 1;
+        const latestIngredientBox = document.getElementById("ingredientDropdown");
+        const newIngredientBox = `<input class="ingredient">`;
+        console.log(newIngredientBox);
+        addButton.insertAdjacentHTML('beforebegin', newIngredientBox);
+
+    });
+//----------------------------------------------------------
+    const generateDrinks = jsonResponse => {
+        const drinks= jsonResponse.drinks;
+        const template = document.getElementById("tpl-search");
+        for(let i=0; i< drinks.length; i++){
+            const drink = drinks[i];
+            const clone = template.content.cloneNode(true);
+            const name = clone.querySelector("h2");
+            const img = clone.querySelector("img");
+            const button = clone.querySelector("button");
+            name.innerText = drink.strDrink;
+            img.src = drink.strDrinkThumb;
+            button["drinkId"] = drink.idDrink;
+            searchResults1.appendChild(clone);
+        }
+
+    } ;
+    //--------------------------------------------------------
+    const displayResults = jsonResponse => {
+        generateDrinks(jsonResponse);
+    };
+//--------------------------------------------------------
+
+    const generateIngredientsQueryString = () => {
+        const ingredientboxes = document.getElementsByClassName("ingredient");
+        results = [];
+        for (const ingredientBox of ingredientboxes) {
+            console.log(ingredientBox.value);
+            results.push(ingredientBox.value);
+
+        }
+        const query = results.map(ingredient => formatIngredient(ingredient)).join();
+
+        return query;
+    };
+    //------------------------------------------------------------
+    const getDrinksContainingIngredients = async () => {
+        const queryString = `/filter.php?i=${generateIngredientsQueryString()}`;
+
+        let url = `${apiPath}${credentials}${queryString}`;
+        console.log(queryString);
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const jsonResponse = await response.json();
+                displayResults(jsonResponse);
+            }
+
+        }
+        catch (error) {
+            console.log(error);
+        }
+
+    }
 
 })();
