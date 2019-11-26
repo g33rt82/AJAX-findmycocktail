@@ -5,46 +5,132 @@
     <title>Findmycocktail</title>
     <meta name="description" content="Search for cocktails based on ingredients">
     <meta name="keywords" content="cocktail, alcohol">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <link href="css/style.css">
 </head>
 <body>
-<h1>Find my cocktail</h1>
-<h2>search by ingredients</h2>
-<h2>The form</h2>
-<form>
-        <label for="categoryDropdown" >catergory</label>
-        <input id="categoryDropdown"  list="categoryList">
+<div class="container">
+    <h1>Find my cocktail</h1>
+    <h2>search by ingredients</h2>
+    <h2>The form</h2>
+    <form>
+        <label for="categoryDropdown">catergory</label>
+        <input id="categoryDropdown" list="categoryList">
         <br/>
-        <label for="ingredientDropdown" >ingredients</label>
-        <input id="ingredientDropdown" class="ingredient"  list="ingredientList">
-    <button id="addIngredient">add ingredient</button><br/>
+        <label for="ingredientDropdown">ingredients</label>
+        <input id="ingredientDropdown" class="ingredient" list="ingredientList">
+        <button id="addIngredient">add ingredient</button>
         <br/>
-        <label for="alcoholDropdown" >alcoholic type</label>
-        <input id="alcoholDropdown"  list="alcoholList">
+        <br/>
+        <label for="alcoholDropdown">alcoholic type</label>
+        <input id="alcoholDropdown" list="alcoholList">
         <br/>
         <button id="search">Search!</button>
-</form>
-<div id="searchResults1"></div>
-<template id="tpl-search">
-    <div class="searchResult">
-    <img class="searchResultPic"/>
-    <h2></h2>
-    <button id="details">details</button>
+    </form>
+    <div id="searchResults1">
+        <div class="row"></div>
     </div>
-</template>
-<div class="searchResults"></div>
-<button id="randomCocktail">Get me a random Cocktail</button>
-<div class="random">
-    <h1 class="name"></h1>
-    <img src=""/>
-    <h2 class="ingredients">
-        <ul></ul>
-    </h2>
-    <h3 class="glass"></h3>
-    <p class="instructions"></p>
-</div>
 
+    <template id="tpl-search">
+        <div class="col-sm-6 col-lg-3">
+        <div  class="searchResult card card-rotating text-center" >
+            <div class="face-front">
+                <div class="card-up"></div>
+            <img class="searchResultPic card-img-top"/>
+            <div class="card-body">
+                <div class="card-title"></div>
+                <button class="rotate-btn detailsButton"  data-card="card-1">Details</button>
+            </div>
+            </div>
+            <div class="face-back">
+                <div class="card-body">
+                    <div class="card-text">
+                        <ul></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </template>
+    <div class="searchResults"></div>
+    <button id="randomCocktail">Get me a random Cocktail</button>
+    <div class="random">
+        <h1 class="name"></h1>
+        <img src=""/>
+        <h2 class="ingredients">
+            <ul></ul>
+        </h2>
+        <h3 class="glass"></h3>
+        <p class="instructions"></p>
+    </div>
+</div>
 <script src="js/script.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
 </body>
 </html>
+
+<!-- Rotating card -->
+<div class="card-wrapper">
+    <div id="card-13" class="card card-rotating text-center">
+
+        <!-- Front Side -->
+        <div class="face front">
+
+            <!-- Image-->
+            <div class="card-up">
+                <img class="card-img-top" src="https://mdbootstrap.com/img/Photos/Others/photo7.jpg" alt="Image with a photo of clouds.">
+            </div>
+
+            <!-- Avatar -->
+            <div class="avatar mx-auto white"><img src="https://mdbootstrap.com/img/Photos/Avatars/img%20(20).jpg" class="rounded-circle"
+                                                   alt="Sample avatar image.">
+            </div>
+
+            <!-- Content -->
+            <div class="card-body">
+                <h4 class="font-weight-bold mb-3">Marie Johnson</h4>
+                <p class="font-weight-bold blue-text">Web developer</p>
+                <!-- Triggering button -->
+                <a class="rotate-btn" data-card="card-1"><i class="fas fa-redo-alt"></i> Click here to rotate</a>
+            </div>
+        </div>
+        <!-- Front Side -->
+
+        <!-- Back Side -->
+        <div class="face back">
+            <div class="card-body">
+
+                <!-- Content -->
+                <h4 class="font-weight-bold mb-0">About me</h4>
+                <hr>
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fugiat tenetur odio suscipit non commodi vel
+                    eius veniam maxime?
+                <hr>
+                <!-- Social Icons -->
+                <ul class="list-inline py-2">
+                    <li class="list-inline-item"><a class="p-2 fa-lg fb-ic"><i class="fab fa-facebook-f"></i></a></li>
+                    <li class="list-inline-item"><a class="p-2 fa-lg tw-ic"><i class="fab fa-twitter"></i></a></li>
+                    <li class="list-inline-item"><a class="p-2 fa-lg gplus-ic"><i class="fab fa-google-plus-g"></i></a></li>
+                    <li class="list-inline-item"><a class="p-2 fa-lg li-ic"><i class="fab fa-linkedin-in"></i></a></li>
+                </ul>
+                <!-- Triggering button -->
+                <a class="rotate-btn" data-card="card-1"><i class="fas fa-undo"></i> Click here to rotate back</a>
+
+            </div>
+        </div>
+        <!-- Back Side -->
+
+    </div>
+</div>
+<!-- Rotating card -->

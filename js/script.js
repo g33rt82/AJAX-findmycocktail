@@ -10,7 +10,9 @@
     const ingredientFilter = document.getElementById("ingredientDropdown");
     const alcoholicFilter = document.getElementById("alcoholDropdown");
     const searchResults = document.getElementsByClassName("searchResults");
-    const searchResults1 = document.getElementById("searchResults1");
+    const searchResults1 = document.querySelector("#searchResults1 .row");
+    const detailsButton = document.getElementsByClassName("rotate-btn");
+
 
     let addCounter = 1;
 
@@ -93,11 +95,41 @@
     const wrapWithTag = (content, tag) => {
         return `<${tag}>${content}</${tag}>`
     };
+
+    //------------------------------------------------------------
+    const searchDrinksContainingIngredients = async () => {
+        const queryString = `/filter.php?i=${generateIngredientsQueryString()}`;
+        let url = `${apiPath}${credentials}${queryString}`;
+        console.log(queryString);
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const jsonResponse = await response.json();
+                if (Array.isArray(jsonResponse.drinks)) {
+                    generateDrinks(jsonResponse,);
+                }
+                else {
+                    searchResults1.innerHTML = "<strong>Sorry, no results with that combination</strong>";
+                }
+            }
+
+        }
+        catch (error) {
+            console.log(error);
+        }
+
+    };
 //----------------------------------------------------------------------
-    const getIngredients = jsonResponse => {
+    const getIngredients = (jsonResponse, source) => {
+        console.log("*************");
+        console.log(source);
+        const ingredientLocation = document.querySelector(`#${source}`);
+        console.log(ingredientLocation);
+        console.log("*************");
+
         let ingredients = [];
         let i = 1;
-
+        console.log(`The source is ${source}`);
         do {
             const ingredientName = jsonResponse.drinks[0][`strIngredient${i}`];
             const ingredientMeasure = jsonResponse.drinks[0][`strMeasure${i}`];
@@ -106,10 +138,20 @@
             i += 1;
         } while (jsonResponse.drinks[0][`strIngredient${i}`] !== null)
 
-        ingredients.forEach(ingredient => cocktailIngredients.insertAdjacentHTML('beforeend', wrapWithTag(ingredient, 'li')));
+        if (source.includes("textBox")) {
+            ingredients.forEach(ingredient => ingredientLocation.insertAdjacentHTML('beforeend', wrapWithTag(ingredient, 'li')));
+        }
+        else {
+            ingredients.forEach(ingredient => cocktailIngredients.insertAdjacentHTML('beforeend', wrapWithTag(ingredient, 'li')));
+
+        }
+
+
         ingredients = [];
 
     };
+    //-------------------------------------------------------
+
 //--------------------------------------------------------------------------
     const getIngredientId = async ingredient => {
         const formattedIngredient = await formatIngredient(ingredient);
@@ -126,16 +168,19 @@
     const formatIngredient = ingredient => {
         const formattedIngredient = ingredient.replace(/ /g, "_");
         return formattedIngredient;
-    }
+    };
+
+    //-----------EventHandler for detailsbutton in searchresults-------------------
 
 
 //-------------------REQUEST A RANDOM COCKTAIL----------------------------------------------------------------------------
-    requestRandomCocktail.addEventListener("click", async function () {
+    requestRandomCocktail.addEventListener("click", async function (event) {
         const cocktailName = document.querySelector(".random .name");
         const cocktailImage = document.querySelector(".random img");
         const cocktailGlass = document.querySelector(".random .glass");
         const cocktailInstructions = document.querySelector(".random .instructions");
         const cocktailIngredients = document.querySelector(".random .ingredients ul");
+        const source = event.target.id;
         cocktailIngredients.innerHTML = "";
 
 
@@ -159,7 +204,7 @@
                 cocktailImage.src = randomCocktailImage;
                 cocktailGlass.innerText = `for this cocktail you need a ${randomCocktailGlass}`;
                 cocktailInstructions.innerText = `instructions: ${randomCocktailInstructions}`;
-                getIngredients(jsonResponse);
+                getIngredients(jsonResponse, source);
             }
         }
         catch (error) {
@@ -169,13 +214,14 @@
 
 
     });
-//-------------Request results by filtering----------------------------------------------------
+//-------------Request results by filtering on ingredients-----------------------------------------------
 
     document.getElementById("search").addEventListener("click", function () {
         event.preventDefault();
         searchResults1.innerHTML = "";
-        getDrinksContainingIngredients();
+        searchDrinksContainingIngredients();
     });
+
 
 //---------------------eventHandeler for "add ..."buttons--------------------------
 
@@ -189,28 +235,53 @@
         addButton.insertAdjacentHTML('beforebegin', newIngredientBox);
 
     });
+
 //----------------------------------------------------------
-    const generateDrinks = jsonResponse => {
-        const drinks= jsonResponse.drinks;
+    const generateDrinks = (jsonResponse) => {
+        const drinks = jsonResponse.drinks;
         const template = document.getElementById("tpl-search");
-        for(let i=0; i< drinks.length; i++){
+        for (let i = 0; i < drinks.length; i++) {
             const drink = drinks[i];
             const clone = template.content.cloneNode(true);
-            const name = clone.querySelector("h2");
+            const name = clone.querySelector(".card-title");
+            const cardTextBox = clone.querySelector(".card-text ul");
+            cardTextBox.setAttribute("id", `textBox-${i + 1}`);
+            console.log(name);
             const img = clone.querySelector("img");
-            const button = clone.querySelector("button");
+            const button = clone.querySelector(".rotate-btn");
             name.innerText = drink.strDrink;
             img.src = drink.strDrinkThumb;
             button["drinkId"] = drink.idDrink;
+            button["buttonId"] = `${i + 1}`;
+            button["card"] = `card-${i + 1}`;
             searchResults1.appendChild(clone);
+            const cardButtons = document.querySelectorAll(".rotate-btn");
+            cardButtons.forEach(cardButton => cardButton.addEventListener("click", getDetailsFromId));
+
+        }
+    };
+//--------------------------------------------------------------------------------------
+    const getDetailsFromId = async e => {
+        console.log(event.target.buttonId);
+        console.log(event);
+        const BoxToFill = `textBox-${event.target.buttonId}`;
+        queryString = `/lookup.php?i=${e.target.drinkId}`;
+        url = `${apiPath}${credentials}${queryString}`;
+        try {
+            const response = await fetch(url);
+            if (response.ok) {
+                const jsonResponse = await response.json();
+                console.log(jsonResponse);
+                getIngredients(jsonResponse, BoxToFill);
+            }
+        }
+        catch (error) {
+            console.log(error);
         }
 
-    } ;
-    //--------------------------------------------------------
-    const displayResults = jsonResponse => {
-        generateDrinks(jsonResponse);
     };
-//--------------------------------------------------------
+    //--------------------------------------------------------
+
 
     const generateIngredientsQueryString = () => {
         const ingredientboxes = document.getElementsByClassName("ingredient");
@@ -224,25 +295,6 @@
 
         return query;
     };
-    //------------------------------------------------------------
-    const getDrinksContainingIngredients = async () => {
-        const queryString = `/filter.php?i=${generateIngredientsQueryString()}`;
 
-        let url = `${apiPath}${credentials}${queryString}`;
-        console.log(queryString);
-        try {
-            const response = await fetch(url);
-            if (response.ok) {
-                const jsonResponse = await response.json();
-                console.log(jsonResponse);
-                displayResults(jsonResponse);
-            }
-
-        }
-        catch (error) {
-            console.log(error);
-        }
-
-    }
 
 })();
